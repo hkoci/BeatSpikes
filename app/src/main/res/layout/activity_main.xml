@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.henrikoci.henos.beatspikes.MainActivity">
+
+    <!-- The linear layout positions the buttons in the centre -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <!-- Play game button -->
+        <!-- The button is positioned at the top of the linear layout,
+        It has the text 'Play Game' and uses the gotoPlayGame method when clicked/tapped -->
+        <Button
+            android:id="@+id/playButton"
+            android:layout_width="259dp"
+            android:layout_height="wrap_content"
+            android:text="Play Game"
+            android:onClick="gotoPlayGame"/>
+
+        <!-- Character design button -->
+        <!-- The button is positioned as the second button on the linear layout,
+        It has the text 'Character Design' and uses the gotoCharacterDesign method when clicked/tapped -->
+        <Button
+            android:id="@+id/characterButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Character Design"
+            android:onClick="gotoCharacterDesign" />
+
+        <!-- Settings button -->
+        <!-- The button is positioned as the third button on the linear layout,
+        It has the text 'Settings' and uses the gotoSettings method when clicked/tapped -->
+        <Button
+            android:id="@+id/settingsButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Settings"
+            android:onClick="gotoSettings"/>
+
+        <!-- Quit button -->
+        <!-- The button is positioned as the second button on the linear layout,
+        It has the text 'Quit Game' and uses the gotoQuit method when clicked/tapped -->
+        <Button
+            android:id="@+id/quitButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Quit Game"
+            android:onClick="gotoQuit"/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/Devbutton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="gotoDev"
+        android:text="Developer view"
+        tools:layout_editor_absoluteX="454dp"
+        tools:layout_editor_absoluteY="240dp" />
+
+</android.support.constraint.ConstraintLayout>
