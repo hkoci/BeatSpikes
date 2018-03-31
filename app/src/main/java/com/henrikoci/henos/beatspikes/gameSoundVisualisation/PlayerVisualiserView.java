@@ -4,8 +4,10 @@ import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.nfc.Tag;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -129,6 +131,7 @@ public class PlayerVisualiserView extends View {
     }
 
     private void analyseSpikeThreshold(){
+        System.out.println("size of array in analyseSpikeThreshold: " + barHeightArray.size());
         int totalBarsCount = barHeightArray.size();
         System.out.println("totalbars: " + totalBarsCount);
         gameClassInstance.setSongLength(barHeightArray.size());
@@ -269,7 +272,11 @@ public class PlayerVisualiserView extends View {
                 float top = y + dp(VISUALIZER_HEIGHT - Math.max(1, VISUALIZER_HEIGHT * value / 31.0f));
                 float right = x + dp(2);
                 float bottom = y + dp(VISUALIZER_HEIGHT);
+
+                //Problem lies here, barHeightArray will not add the height value to the height arrayList (and height of bar is top)
+                //Normal styled arrays with define size will also not add to its array...
                 barHeightArray.add(top);
+
                 if (x < denseness && x + dp(2) < denseness) {
                     canvas.drawRect(left, top, right, bottom, notPlayedStatePainting);
                 } else {
@@ -279,11 +286,8 @@ public class PlayerVisualiserView extends View {
                     }
                 }
 
-                //Problem lies here, barHeightArray will not add the height value to the height arrayList (and height of bar is top)
-                //Normal styled arrays with define size will also not add to its array...
-                barHeightArray.add(top);
-
                 barNum++;
+                System.out.println("size of array in method of onDraw :" + barHeightArray.size());
             }
 
         }
