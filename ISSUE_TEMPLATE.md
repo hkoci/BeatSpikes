@@ -1,5 +1,8 @@
 ## Background details of bug
->Provide **relevant details** about the issue. This includes your device details and what is happening. _If you have looked at the source code, where could the issue potentially be?_
+>Provide **relevant details** about the issue. This includes your device details and what is happening. _If you have looked at the source code, where could the issue potentially be?_ Reference the commit with the issue!
+
+## Date/Time of reported bug:
+>Is this an current issue or a previously related issue? If it is previous, reference this to the previous issue. If it has been referenced, include the date of that reference.
 
 ## Reported by:
 >Include your name here, this is for the validation of authentic reports for the OCR coursework. Include your role in using this application (e.g. client, user, peer review developer etc.)

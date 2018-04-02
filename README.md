@@ -1,9 +1,4 @@
 # audioproj
-
-![issues](https://img.shields.io/github/issues/DeliriousMetro/audioproj.svg) ![forks](https://img.shields.io/github/forks/DeliriousMetro/audioproj.svg) ![forks](https://img.shields.io/github/stars/DeliriousMetro/audioproj.svg) ![forks](https://img.shields.io/github/license/DeliriousMetro/audioproj.svg)
-
-[![HitCount](http://hits.dwyl.io/DelirousMetro/audioproj.svg)](http://hits.dwyl.io/DelirousMetro/audioproj) ![buildPass](https://img.shields.io/badge/build%20-PASSING-brightgreen.svg?style=flat)
-
 This is an Android project involved in creating a platform scroller game using imported audio. It is currently a work in progress.
 ## Synopsis
 
