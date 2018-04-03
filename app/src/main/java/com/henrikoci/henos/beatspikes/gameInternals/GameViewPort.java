@@ -65,8 +65,22 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         return this.levelWidth;
     }
 
+    public int getSpriteSizeHeight(){
+        return this.SpriteSizeHeight;
+    }
+
     public char[][] getLevelMap(){
         return levelMap;
+    }
+
+    public String printLevelMap() {
+        for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
+            for (int widthLoop = 0; widthLoop < levelWidth; widthLoop++) {
+                System.out.print(levelMap[heightLoop][widthLoop]);
+            }
+            System.out.println();
+        }
+        return "levelMap printed";
     }
 
     @Override

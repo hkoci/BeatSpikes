@@ -64,7 +64,12 @@
             android:hardwareAccelerated="true"
             android:label="Game Canvas"
             android:screenOrientation="sensorLandscape"
-            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        <intent-filter>
+            <action android:name="GameCanvasView.intent.action.Launch" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+        </activity>
         <activity android:name=".gameSoundVisualisation.visualiserView"
             android:screenOrientation="sensorLandscape"
             android:hardwareAccelerated="true"></activity>

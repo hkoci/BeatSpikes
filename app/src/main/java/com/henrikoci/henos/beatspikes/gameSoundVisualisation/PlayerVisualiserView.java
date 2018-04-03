@@ -2,6 +2,7 @@ package com.henrikoci.henos.beatspikes.gameSoundVisualisation;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.support.annotation.Nullable;
@@ -84,7 +85,7 @@ public class PlayerVisualiserView extends View {
 
         //Show info
         ProgressDialog progressDialog = new ProgressDialog(getContext());
-        progressDialog.setCancelable(false);
+        progressDialog.setCancelable(true);
         progressDialog.setMessage("Initialising Array");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.show();
@@ -95,10 +96,17 @@ public class PlayerVisualiserView extends View {
         //Change message to spike generation state
         progressDialog.setMessage("Analysing audio spectrum");
 
-        //Add spikes to game array
-        analyseSpikeThreshold();
+        //Add spikes to levelMap
+        performSpikeAnalysis();
 
+        progressDialog.hide();
+
+        gameClassInstance.printLevelMap();
+
+        analyseSpikeThreshold();
         //TODO - WIP launch intent to activity of gameViewPort
+        Intent Intent = new Intent("GameCanvasView.intent.action.Launch");
+        getContext().startActivity(Intent);
 
     }
 
@@ -121,6 +129,18 @@ public class PlayerVisualiserView extends View {
                 }
                 else{
                     gameClassInstance.addToLevelMap(heightLoop,widthLoop, '_');// initialise default sky for each element
+                }
+            }
+        }
+    }
+
+    private void performSpikeAnalysis(){
+        for (int i = 0; i < bytes.length; i++){
+            int numberOfSpikes = bytes[i]/gameClassInstance.getSpriteSizeHeight();
+
+            if(numberOfSpikes > 0){
+                for (int j = 0; j > (gameClassInstance.getLevelHeight() - numberOfSpikes); j--){
+                    gameClassInstance.addToLevelMap(i,j,'S');
                 }
             }
         }
