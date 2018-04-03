@@ -17,6 +17,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -56,6 +57,12 @@ public class PlayerVisualiserView extends View {
 
     // Instance of GameViewPort
     GameViewPort gameClassInstance = new GameViewPort(getContext());
+
+    // levelMap array moved to this class due to it not initialising.
+    private int levelheight = gameClassInstance.getLevelHeight();
+    private int levelWidth = gameClassInstance.getLevelWidth();
+
+    public char[][] levelMap = new char[levelheight][levelWidth];
 
     public PlayerVisualiserView(Context context) {
         super(context);
@@ -101,19 +108,20 @@ public class PlayerVisualiserView extends View {
 
         progressDialog.hide();
 
-        gameClassInstance.printLevelMap();
+        //gameClassInstance.printLevelMap();
 
-        analyseSpikeThreshold();
+        storeLevelMap(levelMap,"importMusicMap.beat");
+
+        //analyseSpikeThreshold();
         //TODO - WIP launch intent to activity of gameViewPort
-        Intent Intent = new Intent("GameCanvasView.intent.action.Launch");
-        getContext().startActivity(Intent);
+
+        Intent intent = new Intent("GameCanvasView.intent.action.Launch");
+        getContext().startActivity(intent);
 
     }
 
-    private void initialiseGameArray(){
-        int levelheight = gameClassInstance.getLevelHeight();
+    public void initialiseGameArray(){
         System.out.println("Level Height:" + levelheight);
-        int levelWidth = gameClassInstance.getLevelWidth();
         System.out.println("Level Width:" + levelWidth);
 
         // Initialise levelMap to blank by adding "_" to each element in the Array
@@ -124,23 +132,23 @@ public class PlayerVisualiserView extends View {
 
 
                 if(heightLoop == levelheight-1 ) {
-                    gameClassInstance.addToLevelMap(heightLoop,widthLoop, 'F'); // initialise default floor for each element on the first row
+                    levelMap[heightLoop][widthLoop] = 'F'; // initialise default floor for each element on the first row
 
                 }
                 else{
-                    gameClassInstance.addToLevelMap(heightLoop,widthLoop, '_');// initialise default sky for each element
+                    levelMap[heightLoop][widthLoop] = '_';// initialise default sky for each element
                 }
             }
         }
     }
 
-    private void performSpikeAnalysis(){
+    public void performSpikeAnalysis(){
         for (int i = 0; i < bytes.length; i++){
             int numberOfSpikes = bytes[i]/gameClassInstance.getSpriteSizeHeight();
 
             if(numberOfSpikes > 0){
                 for (int j = 0; j > (gameClassInstance.getLevelHeight() - numberOfSpikes); j--){
-                    gameClassInstance.addToLevelMap(i,j,'S');
+                    levelMap[i][j] = 'S';
                 }
             }
         }
@@ -329,5 +337,24 @@ public class PlayerVisualiserView extends View {
             e.printStackTrace();
         }
         return bytes;
+    }
+
+    private void storeLevelMap(char[][] array,String filename){
+        String levelMapCombinedString = "";
+        for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
+            for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
+                    levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop] + " ";
+            }
+        }
+
+        FileOutputStream outputStream;
+
+        try {
+            outputStream = gameClassInstance.getContext().openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(levelMapCombinedString.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

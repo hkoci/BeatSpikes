@@ -1,6 +1,7 @@
 package com.henrikoci.henos.beatspikes.gameInternals;
 
 // Required
+
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -11,6 +12,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.henrikoci.henos.beatspikes.R;
+
+import java.io.FileOutputStream;
 
 public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 {
@@ -71,6 +74,18 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 
     public char[][] getLevelMap(){
         return levelMap;
+    }
+
+    private void generateLevelMap(){
+        FileOutputStream outputStream;
+
+        try {
+            outputStream = getContext().openFileOutput("imputMusicMap.beat", Context.MODE_PRIVATE);
+            //outputStream.write(fileContents.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public String printLevelMap() {
