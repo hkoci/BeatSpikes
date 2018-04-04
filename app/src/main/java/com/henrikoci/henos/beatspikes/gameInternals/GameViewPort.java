@@ -106,7 +106,7 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
                 line = br.readLine(); //1 line = 1 row
                 Log.i("receptor", "" + br.readLine());
                 lineArray = line.toCharArray(); //pass line (String) to char array
-                for(j=0; j<receptor[0].length; j++){ //notice that we loop using the length of i=0
+                for(j=0; j<levelWidth; j++){ //notice that we loop using the length of i=0
                     levelMap[i][j]=lineArray[j];    //we initialize our 2d array after reading each line
                 }
             }
