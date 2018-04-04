@@ -345,6 +345,7 @@ public class PlayerVisualiserView extends View {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
                     levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop] + " ";
             }
+            levelMapCombinedString = levelMapCombinedString + '\n';
         }
 
         FileOutputStream outputStream;
