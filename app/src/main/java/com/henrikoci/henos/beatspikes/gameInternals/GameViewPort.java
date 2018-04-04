@@ -7,13 +7,18 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.henrikoci.henos.beatspikes.R;
 
-import java.io.FileOutputStream;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 {
@@ -76,16 +81,48 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         return levelMap;
     }
 
-    private void generateLevelMap(){
-        FileOutputStream outputStream;
+    /* modified https://stackoverflow.com/questions/37263735/reading-data-from-a-text-file-into-a-2d-array-and-getting-out-of-bounds-exceptio for use in Android */
+    public void generateLevelMap(Context context){
 
-        try {
-            outputStream = getContext().openFileOutput("imputMusicMap.beat", Context.MODE_PRIVATE);
-            //outputStream.write(fileContents.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        char[][] receptor = null;   //receptor 2d array
+        char[] lineArray = null;    //receptor array for a line
+
+        FileReader fr = null;
+
+        String line = " ";
+
+        try{
+            InputStream inputStream = context.openFileInput("importMusicMap.beat");
+            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+            BufferedReader br = new BufferedReader(inputStreamReader);
+
+            line = br.readLine();//initializes line reading the first line with the index
+            int i = line.toCharArray()[0]-48; //we convert line to a char array and get the fist index (i) //48 = '0' at ASCII
+            int j = line.toCharArray()[1]-48; // ... get the second index(j)
+
+            receptor = new char[i][j];  //we can create our 2d receptor array using both index
+
+            for(i=0; i<receptor.length;i++){
+                line = br.readLine(); //1 line = 1 row
+                Log.i("receptor", "" + br.readLine());
+                lineArray = line.toCharArray(); //pass line (String) to char array
+                for(j=0; j<receptor[0].length; j++){ //notice that we loop using the length of i=0
+                    levelMap[i][j]=lineArray[j];    //we initialize our 2d array after reading each line
+                }
+            }
+        }catch(IOException e){
+            System.out.println("I/O error");
+        }finally{
+            try {
+                if(fr !=null){
+                    //inputStream.close();
+                    fr.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } //end try-catch-finally
+        levelMap = receptor;
     }
 
     public String printLevelMap() {
@@ -129,6 +166,10 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         player = new Player(BitmapFactory.decodeResource(getResources(), R.drawable.box25), SpriteSizeWidth, SpriteSizeHeight, 1, playerDrawX); // instantiate player with player image
 
         initPaints();
+
+        generateLevelMap(getContext());
+
+        printLevelMap();
 
         // Initialise levelMap to blank by adding "_" to each element in the Array
         // Key, "_" = Sky , "F" = Floor and "S" = Spike.

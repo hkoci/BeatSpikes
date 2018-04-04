@@ -343,7 +343,7 @@ public class PlayerVisualiserView extends View {
         String levelMapCombinedString = "";
         for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
-                    levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop] + " ";
+                    levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
             }
             levelMapCombinedString = levelMapCombinedString + '\n';
         }
