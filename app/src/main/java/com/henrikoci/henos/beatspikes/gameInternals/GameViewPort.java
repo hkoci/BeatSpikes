@@ -116,7 +116,26 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             // I/O error, reports error in console logcat
             Log.e(TAG, "", e);
         }finally{
-            levelMap = receptor;
+            //https://stackoverflow.com/questions/8193402/creating-new-array-with-contents-from-old-array-while-keeping-the-old-array-stat
+
+            /*
+            The method takes five arguments (System.arraycopy):
+                src: The source array.
+                srcPosition: The position in the source from where you wish to begin copying.
+                des: The destination array.
+                desPosition: The position in the destination array to where the copy should start.
+                length: The number of elements to be copied.
+             */
+
+            int length = receptor.length;
+
+            for (int i = 0; i < length; i++) {
+                System.arraycopy(receptor[i], 0, levelMap[i], 0, receptor[i].length);
+            }
+
+            System.out.println("pre-copy");
+            printLevelMap();
+            System.out.println("post-copy");
         } //end try-catch-finally
     }
 
