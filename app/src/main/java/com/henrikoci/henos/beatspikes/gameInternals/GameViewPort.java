@@ -19,6 +19,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Scanner;
+
+import static android.content.ContentValues.TAG;
 
 public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 {
@@ -85,44 +88,36 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     public void generateLevelMap(Context context){
 
         char[][] receptor = null;   //receptor 2d array
-        char[] lineArray = null;    //receptor array for a line
-
-        FileReader fr = null;
-
-        String line = " ";
 
         try{
             InputStream inputStream = context.openFileInput("importMusicMap.beat");
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
-            BufferedReader br = new BufferedReader(inputStreamReader);
 
-            line = br.readLine();//initializes line reading the first line with the index
-            int i = line.toCharArray()[0]-48; //we convert line to a char array and get the fist index (i) //48 = '0' at ASCII
-            int j = line.toCharArray()[1]-48; // ... get the second index(j)
+            Scanner scanner = new Scanner(inputStreamReader);
+            String[] size = scanner.nextLine().split("\\s");
 
-            receptor = new char[i][j];  //we can create our 2d receptor array using both index
+            /*File format is first line, contains Height and then Width in integers
+            For example, 12 200
+            */
 
-            for(i=0; i<receptor.length;i++){
-                line = br.readLine(); //1 line = 1 row
-                Log.i("receptor", "" + br.readLine());
-                lineArray = line.toCharArray(); //pass line (String) to char array
-                for(j=0; j<levelWidth; j++){ //notice that we loop using the length of i=0
-                    levelMap[i][j]=lineArray[j];    //we initialize our 2d array after reading each line
+            //Create a new temporary array with
+            char[][] array = new char[Integer.parseInt(size[0])][Integer.parseInt(size[1])];
+
+            for(int i=0; i < levelheight; i++) {
+                while(scanner.hasNextLine()){
+                    System.out.println("SC" + scanner.nextLine());
+                    array[i] = scanner.nextLine().toCharArray();
                 }
             }
+
+            receptor = array;
+
         }catch(IOException e){
-            System.out.println("I/O error");
+            // I/O error, reports error in console logcat
+            Log.e(TAG, "", e);
         }finally{
-            try {
-                if(fr !=null){
-                    //inputStream.close();
-                    fr.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            levelMap = receptor;
         } //end try-catch-finally
-        levelMap = receptor;
     }
 
     public String printLevelMap() {
@@ -189,8 +184,8 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         }*/
 
         //we can safely start the game loop
-        thread.setRunning(true);
-        thread.start();
+        //thread.setRunning(true);
+        //thread.start();
 
     }
 

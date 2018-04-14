@@ -341,6 +341,10 @@ public class PlayerVisualiserView extends View {
 
     private void storeLevelMap(char[][] array,String filename){
         String levelMapCombinedString = "";
+
+        //initialise size parameters at top of file
+        levelMapCombinedString = "" + levelheight + " " + levelWidth + '\n';
+
         for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
                     levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
