@@ -23,6 +23,8 @@ import java.util.Scanner;
 
 import static android.content.ContentValues.TAG;
 
+import java.util.Arrays;
+
 public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 {
     public static final int WIDTH = 500; //width of ViewPort
@@ -116,6 +118,21 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             // I/O error, reports error in console logcat
             Log.e(TAG, "", e);
         }finally{
+
+
+
+            /* Implementation through loops*/
+
+            for (int i = 0; i < levelMap.length; ++i) {
+
+                // allocating space for each row of destination array
+                levelMap[i] = new char[receptor[i].length];
+
+                for (int j = 0; j < levelMap[i].length; ++j) {
+                    levelMap[i][j] = receptor[i][j];
+                }
+            }
+
             //https://stackoverflow.com/questions/8193402/creating-new-array-with-contents-from-old-array-while-keeping-the-old-array-stat
 
             /*
@@ -127,11 +144,12 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
                 length: The number of elements to be copied.
              */
 
+            /* Implementation through arraycopy
             int length = receptor.length;
 
             for (int i = 0; i < length; i++) {
                 System.arraycopy(receptor[i], 0, levelMap[i], 0, receptor[i].length);
-            }
+            }*/
 
             System.out.println("pre-copy");
             printLevelMap();
