@@ -15,15 +15,11 @@ import android.view.SurfaceView;
 import com.henrikoci.henos.beatspikes.R;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Scanner;
 
 import static android.content.ContentValues.TAG;
-
-import java.util.Arrays;
 
 public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 {
@@ -33,8 +29,8 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     private Player player; // instantiate player class as 'player'
     private int SpriteSizeWidth = 25;
     private int SpriteSizeHeight = 25;
-    private int songLength = 5000;
-    private int levelWidth = songLength/SpriteSizeWidth;
+    //private int songLength = 5000;
+    private int levelWidth;// = songLength/SpriteSizeWidth;
     private int levelheight = HEIGHT/SpriteSizeHeight;
     private char[][] levelMap = new char[levelheight][levelWidth];
     private final int playerDrawX = WIDTH/(2*SpriteSizeWidth);
@@ -63,7 +59,7 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void setSongLength(int length){
-        songLength = length;
+        //songLength = length;
     }
 
     public void addToLevelMap(int y, int x, char C){
@@ -82,6 +78,10 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         return this.SpriteSizeHeight;
     }
 
+    public int getSpriteSizeWidth(){
+        return this.SpriteSizeWidth;
+    }
+
     public char[][] getLevelMap(){
         return levelMap;
     }
@@ -95,16 +95,21 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             InputStream inputStream = context.openFileInput("importMusicMap.beat");
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 
-            Scanner scanner = new Scanner(inputStreamReader);
-            String[] size = scanner.nextLine().split("\\s");
+
+            BufferedReader br = new BufferedReader(inputStreamReader);
+
+           // Scanner scanner = new Scanner(inputStreamReader);
+            //String[] size = scanner.nextLine().split("\\s");
 
             /*File format is first line, contains Height and then Width in integers
             For example, 12 200
             */
 
             //Create a new temporary array with
-            char[][] array = new char[Integer.parseInt(size[0])][Integer.parseInt(size[1])];
+            //char[][] array = new char[Integer.parseInt(size[0])][Integer.parseInt(size[1])];
 
+
+         /*
             for(int i=0; i < levelheight; i++) {
                 while(scanner.hasNextLine()){
                     System.out.println("SC" + scanner.nextLine());
@@ -113,7 +118,19 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             }
 
             receptor = array;
+*/
+         String currentLine=br.readLine();
+         String[] size = currentLine.split(" ");
+            levelWidth =  Integer.parseInt(size[1]);
+            levelheight = Integer.parseInt(size[0]);
 
+            receptor = new char[levelheight][levelWidth];
+            int i = 0;
+         while((currentLine = br.readLine())!=null){
+             System.out.println(currentLine);
+             receptor[i] = currentLine.toCharArray();
+             i++;
+         }
         }catch(IOException e){
             // I/O error, reports error in console logcat
             Log.e(TAG, "", e);
@@ -121,7 +138,7 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 
 
 
-            /* Implementation through loops*/
+            /* Implementation through loops
 
             for (int i = 0; i < levelMap.length; ++i) {
 
@@ -132,7 +149,15 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
                     levelMap[i][j] = receptor[i][j];
                 }
             }
-
+*/
+            if(receptor!=null){
+                levelMap = receptor;
+                gameState = true;
+                //System.out.println(Arrays.deepToString(levelMap));
+            }
+            else{
+                System.out.println("ERROROROROR");
+            }
             //https://stackoverflow.com/questions/8193402/creating-new-array-with-contents-from-old-array-while-keeping-the-old-array-stat
 
             /*
@@ -151,9 +176,17 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
                 System.arraycopy(receptor[i], 0, levelMap[i], 0, receptor[i].length);
             }*/
 
+            /*
+            System.out.println("pre-copy");
+            for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
+                for (int widthLoop = 0; widthLoop < levelWidth; widthLoop++) {
+                    System.out.print(receptor[heightLoop][widthLoop]);
+                }
+                System.out.println();
+            }
             System.out.println("pre-copy");
             printLevelMap();
-            System.out.println("post-copy");
+            System.out.println("post-copy");*/
         } //end try-catch-finally
     }
 
@@ -230,11 +263,11 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     public boolean onTouchEvent(MotionEvent event) //when the screen has been touched, start the following
     {
         if(event.getAction()==MotionEvent.ACTION_DOWN){
-            if(!player.getPlaying() && gameState)
+            if(!player.getPlaying())
             {
                 player.setPlaying(true);
             }
-            else
+            else //if(player.getPlaying() && gameState)
             {
                 //prevent double jumps when not on floor by only allowing jumping if player is on floor.
                 int playerYcoordinate = player.y;
@@ -249,8 +282,8 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         }
         if(event.getAction()==MotionEvent.ACTION_UP)
         {
-            player.setUp(false);
-            gameState = false;
+           // player.setUp(false);
+           // gameState = false;
         }
 
         return super.onTouchEvent(event);

@@ -60,9 +60,9 @@ public class PlayerVisualiserView extends View {
 
     // levelMap array moved to this class due to it not initialising.
     private int levelheight = gameClassInstance.getLevelHeight();
-    private int levelWidth = gameClassInstance.getLevelWidth();
+    private int levelWidth;// = gameClassInstance.getLevelWidth();
 
-    public char[][] levelMap = new char[levelheight][levelWidth];
+    public char[][] levelMap;// = new char[levelheight][levelWidth];
 
     public PlayerVisualiserView(Context context) {
         super(context);
@@ -122,8 +122,10 @@ public class PlayerVisualiserView extends View {
 
     public void initialiseGameArray(){
         System.out.println("Level Height:" + levelheight);
-        System.out.println("Level Width:" + levelWidth);
+        levelWidth = bytes.length;
+        System.out.println("Level Width:" + bytes.length);
 
+        levelMap = new char[levelheight][levelWidth];
         // Initialise levelMap to blank by adding "_" to each element in the Array
         // Key, "_" = Sky , "F" = Floor and "S" = Spike.
 
@@ -143,12 +145,16 @@ public class PlayerVisualiserView extends View {
     }
 
     public void performSpikeAnalysis(){
+        int spriteHeight = gameClassInstance.getSpriteSizeHeight();
+        //System.out.print(levelheight + " ");
         for (int i = 0; i < bytes.length; i++){
-            int numberOfSpikes = bytes[i]/gameClassInstance.getSpriteSizeHeight();
+            int numberOfSpikes = bytes[i]/spriteHeight;
 
             if(numberOfSpikes > 0){
-                for (int j = 0; j > (gameClassInstance.getLevelHeight() - numberOfSpikes); j--){
-                    levelMap[i][j] = 'S';
+                System.out.println("num spikes" + numberOfSpikes);
+                for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
+                    levelMap[j][i] = 'S';
+                    //System.out.println(levelMap[j][i]);
                 }
             }
         }
@@ -342,14 +348,15 @@ public class PlayerVisualiserView extends View {
     private void storeLevelMap(char[][] array,String filename){
         String levelMapCombinedString = "";
 
+        String lineSeperator = System.getProperty( "line.separator" );
         //initialise size parameters at top of file
-        levelMapCombinedString = "" + levelheight + " " + levelWidth + '\n';
+        levelMapCombinedString = "" + levelheight + " " + levelWidth + lineSeperator;
 
         for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
                     levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
             }
-            levelMapCombinedString = levelMapCombinedString + '\n';
+            levelMapCombinedString = levelMapCombinedString + lineSeperator;
         }
 
         FileOutputStream outputStream;
