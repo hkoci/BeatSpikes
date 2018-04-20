@@ -7,23 +7,21 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.henrikoci.henos.beatspikes.R;
+import com.henrikoci.henos.beatspikes.gameSoundVisualisation.gameActivity;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Scanner;
 
 import static android.content.ContentValues.TAG;
-
-import java.util.Arrays;
 
 public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 {
@@ -33,10 +31,9 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     private Player player; // instantiate player class as 'player'
     private int SpriteSizeWidth = 25;
     private int SpriteSizeHeight = 25;
-    private int songLength = 5000;
-    private int levelWidth = songLength/SpriteSizeWidth;
+    private int levelWidth;// = songLength/SpriteSizeWidth;
     private int levelheight = HEIGHT/SpriteSizeHeight;
-    private char[][] levelMap = new char[levelheight][levelWidth];
+    private char[][] levelMap;
     private final int playerDrawX = WIDTH/(2*SpriteSizeWidth);
 
     private int topLeftViewPortScroller = 0;
@@ -45,7 +42,6 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     private Paint paintSky, paintFloor, paintSpike;
 
     private boolean gameState = true;
-
 
     public GameViewPort(Context context)
     {
@@ -63,7 +59,7 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void setSongLength(int length){
-        songLength = length;
+        //songLength = length;
     }
 
     public void addToLevelMap(int y, int x, char C){
@@ -82,6 +78,10 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
         return this.SpriteSizeHeight;
     }
 
+    public int getSpriteSizeWidth(){
+        return this.SpriteSizeWidth;
+    }
+
     public char[][] getLevelMap(){
         return levelMap;
     }
@@ -89,71 +89,37 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
     /* modified https://stackoverflow.com/questions/37263735/reading-data-from-a-text-file-into-a-2d-array-and-getting-out-of-bounds-exceptio for use in Android */
     public void generateLevelMap(Context context){
 
-        char[][] receptor = null;   //receptor 2d array
-
         try{
             InputStream inputStream = context.openFileInput("importMusicMap.beat");
             InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
 
-            Scanner scanner = new Scanner(inputStreamReader);
-            String[] size = scanner.nextLine().split("\\s");
 
-            /*File format is first line, contains Height and then Width in integers
-            For example, 12 200
-            */
+            BufferedReader br = new BufferedReader(inputStreamReader);
 
-            //Create a new temporary array with
-            char[][] array = new char[Integer.parseInt(size[0])][Integer.parseInt(size[1])];
+         String currentLine=br.readLine();
+         String[] size = currentLine.split(" ");
+            levelWidth =  Integer.parseInt(size[1]);
+            levelheight = Integer.parseInt(size[0]);
 
-            for(int i=0; i < levelheight; i++) {
-                while(scanner.hasNextLine()){
-                    System.out.println("SC" + scanner.nextLine());
-                    array[i] = scanner.nextLine().toCharArray();
-                }
-            }
-
-            receptor = array;
-
+            levelMap = new char[levelheight][levelWidth];
+            int i = 0;
+         while((currentLine = br.readLine())!=null){
+             //System.out.println(currentLine);
+             levelMap[i] = currentLine.toCharArray();
+             i++;
+         }
         }catch(IOException e){
             // I/O error, reports error in console logcat
-            Log.e(TAG, "", e);
+            Log.e(TAG, "generateLevelMap: ERROR 0x00000002", e);
         }finally{
-
-
-
-            /* Implementation through loops*/
-
-            for (int i = 0; i < levelMap.length; ++i) {
-
-                // allocating space for each row of destination array
-                levelMap[i] = new char[receptor[i].length];
-
-                for (int j = 0; j < levelMap[i].length; ++j) {
-                    levelMap[i][j] = receptor[i][j];
-                }
+            if(levelMap!=null){
+                gameState = true;
+                //System.out.println(Arrays.deepToString(levelMap));
+            }
+            else{
+                Log.e(TAG, "generateLevelMap: ERROR 0x0000000D");
             }
 
-            //https://stackoverflow.com/questions/8193402/creating-new-array-with-contents-from-old-array-while-keeping-the-old-array-stat
-
-            /*
-            The method takes five arguments (System.arraycopy):
-                src: The source array.
-                srcPosition: The position in the source from where you wish to begin copying.
-                des: The destination array.
-                desPosition: The position in the destination array to where the copy should start.
-                length: The number of elements to be copied.
-             */
-
-            /* Implementation through arraycopy
-            int length = receptor.length;
-
-            for (int i = 0; i < length; i++) {
-                System.arraycopy(receptor[i], 0, levelMap[i], 0, receptor[i].length);
-            }*/
-
-            System.out.println("pre-copy");
-            printLevelMap();
-            System.out.println("post-copy");
         } //end try-catch-finally
     }
 
@@ -165,6 +131,13 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             System.out.println();
         }
         return "levelMap printed";
+    }
+
+    private void playMusicFile(String musicFile) throws IOException {
+        MediaPlayer mp = new MediaPlayer();
+        mp.setDataSource(musicFile);
+        mp.prepare();
+        mp.start();
     }
 
     @Override
@@ -203,26 +176,16 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
 
         printLevelMap();
 
-        // Initialise levelMap to blank by adding "_" to each element in the Array
-        // Key, "_" = Sky , "F" = Floor and "S" = Spike.
-/*
-        for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
-            for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
-
-
-                if(heightLoop == levelheight-1 ) {
-                    levelMap[heightLoop][widthLoop] = 'F'; // initialise default floor for each element on the first row
-
-                }
-                else{
-                    levelMap[heightLoop][widthLoop] = '_'; // initialise default sky for each element
-                }
-            }
-        }*/
-
         //we can safely start the game loop
-        //thread.setRunning(true);
-        //thread.start();
+        thread.setRunning(true);
+        thread.start();
+
+        try {
+            playMusicFile(String.valueOf(gameActivity.audioFile));
+        } catch (IOException e) {
+            Log.e(TAG, "playMusicFile: ERROR 0x00000002");
+            e.printStackTrace();
+        }
 
     }
 
@@ -234,7 +197,7 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             {
                 player.setPlaying(true);
             }
-            else
+            else if(player.getPlaying() && gameState)
             {
                 //prevent double jumps when not on floor by only allowing jumping if player is on floor.
                 int playerYcoordinate = player.y;
@@ -280,6 +243,7 @@ public class GameViewPort extends SurfaceView implements SurfaceHolder.Callback
             if(levelMap[checkCoordinateNoOffset][playerXInArray] == 'S'){
                 player.setPlaying(false); //stops game scroller at position
                 player.setUp(false); //disallow any jumps to the player position
+                gameState = false;
             }
 
         }

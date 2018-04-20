@@ -5,9 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.media.MediaPlayer;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 import com.henrikoci.henos.beatspikes.R;
@@ -20,6 +23,8 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import static android.content.ContentValues.TAG;
 
 
 public class PlayerVisualiserView extends View {
@@ -52,17 +57,14 @@ public class PlayerVisualiserView extends View {
     private int width;
     private int height;
 
-    // The array with heights of each bar
-    private ArrayList<Float> barHeightArray = new ArrayList<>();
-
     // Instance of GameViewPort
     GameViewPort gameClassInstance = new GameViewPort(getContext());
 
     // levelMap array moved to this class due to it not initialising.
     private int levelheight = gameClassInstance.getLevelHeight();
-    private int levelWidth = gameClassInstance.getLevelWidth();
+    private int levelWidth;// = gameClassInstance.getLevelWidth();
 
-    public char[][] levelMap = new char[levelheight][levelWidth];
+    public char[][] levelMap;// = new char[levelheight][levelWidth];
 
     public PlayerVisualiserView(Context context) {
         super(context);
@@ -87,6 +89,7 @@ public class PlayerVisualiserView extends View {
         notPlayedStatePainting.setAntiAlias(true);
         notPlayedStatePainting.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
 
+
         //Draw the visual bars using the media file imported
         updateVisualizer(fileToBytes(gameActivity.audioFile));
 
@@ -102,18 +105,11 @@ public class PlayerVisualiserView extends View {
 
         //Change message to spike generation state
         progressDialog.setMessage("Analysing audio spectrum");
-
-        //Add spikes to levelMap
         performSpikeAnalysis();
 
-        progressDialog.hide();
-
-        //gameClassInstance.printLevelMap();
+        progressDialog.cancel();
 
         storeLevelMap(levelMap,"importMusicMap.beat");
-
-        //analyseSpikeThreshold();
-        //TODO - WIP launch intent to activity of gameViewPort
 
         Intent intent = new Intent("GameCanvasView.intent.action.Launch");
         getContext().startActivity(intent);
@@ -122,8 +118,10 @@ public class PlayerVisualiserView extends View {
 
     public void initialiseGameArray(){
         System.out.println("Level Height:" + levelheight);
-        System.out.println("Level Width:" + levelWidth);
+        levelWidth = bytes.length;
+        System.out.println("Level Width:" + bytes.length);
 
+        levelMap = new char[levelheight][levelWidth];
         // Initialise levelMap to blank by adding "_" to each element in the Array
         // Key, "_" = Sky , "F" = Floor and "S" = Spike.
 
@@ -143,76 +141,21 @@ public class PlayerVisualiserView extends View {
     }
 
     public void performSpikeAnalysis(){
+        int spriteHeight = gameClassInstance.getSpriteSizeHeight();
+        //System.out.print(levelheight + " ");
         for (int i = 0; i < bytes.length; i++){
-            int numberOfSpikes = bytes[i]/gameClassInstance.getSpriteSizeHeight();
+            int numberOfSpikes = bytes[i]/spriteHeight;
 
             if(numberOfSpikes > 0){
-                for (int j = 0; j > (gameClassInstance.getLevelHeight() - numberOfSpikes); j--){
-                    levelMap[i][j] = 'S';
+                //System.out.println("num spikes" + numberOfSpikes);
+                for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
+                    levelMap[j][i] = 'S';
+                    //System.out.println(levelMap[j][i]);
                 }
             }
         }
     }
 
-    private void analyseSpikeThreshold(){
-        System.out.println("size of array in analyseSpikeThreshold: " + barHeightArray.size());
-        int totalBarsCount = barHeightArray.size();
-        System.out.println("totalbars: " + totalBarsCount);
-        gameClassInstance.setSongLength(barHeightArray.size());
-
-        double boundaryAudioAmplitude;
-        boolean reachPeakLimit = false;
-
-        final double thresholdSpriteLimit = 0.75;
-        float peakHeight = 0;
-
-        //Code to search for the highest amplitude of sound
-        for(int peakCheck = 0;peakCheck<totalBarsCount;peakCheck++){
-            float currentH = barHeightArray.get(peakCheck);
-            System.out.println("Current H: " + currentH);
-            while(!reachPeakLimit){
-                //check for peak height
-                if(currentH >= peakHeight){
-                    peakHeight = currentH;
-                }
-                if(peakCheck == peakCheck-1){
-                    reachPeakLimit = true;
-                }
-            }
-        }
-
-        //Debug info
-        System.out.println("peakHeight" + peakHeight);
-        System.out.println("thresholdSpriteLimit" + thresholdSpriteLimit);
-
-        //Amplitude boundary to reach
-        boundaryAudioAmplitude = peakHeight * thresholdSpriteLimit;
-
-        System.out.println("" + boundaryAudioAmplitude );
-        System.out.println("" + "" );
-
-        //If the boundary is reached, add the spike 'S' to the level map at the coordinate, y:10 is always one above floor.
-        for (int boundaryCheck = 0;boundaryCheck<totalBarsCount;boundaryCheck++){
-            float currentB = barHeightArray.get(boundaryCheck);
-            float checkPercentage = boundaryCheck/totalBarsCount;
-            updatePlayerPercent(checkPercentage);
-            if(currentB >= boundaryAudioAmplitude){
-                gameClassInstance.addToLevelMap(10,boundaryCheck,'S');
-            }
-        }
-/*
-        for (int heightLoop = 0; heightLoop <gameClassInstance.getLevelHeight(); heightLoop++) {
-            for (int widthLoop = 0; widthLoop < gameClassInstance.getLevelWidth(); widthLoop++) {
-
-
-                System.out.println(gameClassInstance.getLevelMap()[heightLoop][widthLoop]);
-
-
-            }
-            System.out.println();
-        }
-*/
-    }
 
     /**
      * update and redraw Visualizer view
@@ -299,7 +242,7 @@ public class PlayerVisualiserView extends View {
 
                 //Problem lies here, barHeightArray will not add the height value to the height arrayList (and height of bar is top)
                 //Normal styled arrays with define size will also not add to its array...
-                barHeightArray.add(top);
+                //barHeightArray.add(top);
 
                 if (x < denseness && x + dp(2) < denseness) {
                     canvas.drawRect(left, top, right, bottom, notPlayedStatePainting);
@@ -311,7 +254,7 @@ public class PlayerVisualiserView extends View {
                 }
 
                 barNum++;
-                System.out.println("size of array in method of onDraw :" + barHeightArray.size());
+                //System.out.println("size of array in method of onDraw :" + barHeightArray.size());
             }
 
         }
@@ -332,8 +275,10 @@ public class PlayerVisualiserView extends View {
             buf.read(bytes, 0, bytes.length);
             buf.close();
         } catch (FileNotFoundException e) {
+            Log.e(TAG, "fileToBytes: ERROR 0x00000002", e);
             e.printStackTrace();
         } catch (IOException e) {
+            Log.e(TAG, "fileToBytes: ERROR 0x0000000D", e);
             e.printStackTrace();
         }
         return bytes;
@@ -342,14 +287,15 @@ public class PlayerVisualiserView extends View {
     private void storeLevelMap(char[][] array,String filename){
         String levelMapCombinedString = "";
 
+        String lineSeperator = System.getProperty( "line.separator" );
         //initialise size parameters at top of file
-        levelMapCombinedString = "" + levelheight + " " + levelWidth + '\n';
+        levelMapCombinedString = "" + levelheight + " " + levelWidth + lineSeperator;
 
         for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
                     levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
             }
-            levelMapCombinedString = levelMapCombinedString + '\n';
+            levelMapCombinedString = levelMapCombinedString + lineSeperator;
         }
 
         FileOutputStream outputStream;
@@ -359,7 +305,9 @@ public class PlayerVisualiserView extends View {
             outputStream.write(levelMapCombinedString.getBytes());
             outputStream.close();
         } catch (Exception e) {
+            Log.e(TAG, "storeLevelMap: ERROR 0x0000001D", e);
             e.printStackTrace();
         }
     }
+
 }
