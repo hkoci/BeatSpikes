@@ -1,14 +1,16 @@
 package com.henrikoci.henos.beatspikes.gameSoundVisualisation;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.media.MediaPlayer;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
@@ -22,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
@@ -66,6 +67,17 @@ public class PlayerVisualiserView extends View {
 
     public char[][] levelMap;// = new char[levelheight][levelWidth];
 
+    AlertDialog analysisAlertDialog;
+
+    //latency time to draw delay handler
+    private Handler delayedHandler = new Handler();
+
+    static CharSequence[] analysisType = new CharSequence[]{
+            "75% of amplitude",
+            "using preset genre",
+            "any present amplitude",
+    };
+
     public PlayerVisualiserView(Context context) {
         super(context);
         init();
@@ -89,13 +101,12 @@ public class PlayerVisualiserView extends View {
         notPlayedStatePainting.setAntiAlias(true);
         notPlayedStatePainting.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
 
-
         //Draw the visual bars using the media file imported
         updateVisualizer(fileToBytes(gameActivity.audioFile));
 
-        //Show info
-        ProgressDialog progressDialog = new ProgressDialog(getContext());
-        progressDialog.setCancelable(true);
+        final ProgressDialog progressDialog = new ProgressDialog(getContext());
+        progressDialog.setCancelable(false);
+        progressDialog.setTitle("Sound generation");
         progressDialog.setMessage("Initialising Array");
         progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
         progressDialog.show();
@@ -104,17 +115,58 @@ public class PlayerVisualiserView extends View {
         initialiseGameArray();
 
         //Change message to spike generation state
-        progressDialog.setMessage("Analysing audio spectrum");
-        performSpikeAnalysis();
+        //progressDialog.setMessage("Analysing audio spectrum");
 
-        progressDialog.cancel();
+        //Show info
+        delayedHandler.postDelayed(new Runnable() {
+            public void run() {
 
-        storeLevelMap(levelMap,"importMusicMap.beat");
+                checkSpikeAnalysisType();
 
-        Intent intent = new Intent("GameCanvasView.intent.action.Launch");
-        getContext().startActivity(intent);
+                progressDialog.cancel();
+            }
+        }, 200);
+    }
+
+
+    public void checkSpikeAnalysisType(){
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+        builder.setTitle("Spike frequency detection");
+
+        builder.setCancelable(false);
+
+        builder.setSingleChoiceItems(analysisType, -1, new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int item) {
+
+                switch(item)
+                {
+                    case 0:
+                        performSpikeAnalysis(0);
+                        break;
+                    case 1:
+                        performSpikeAnalysis(1);
+                        break;
+                    case 2:
+                        performSpikeAnalysis(2);
+                        break;
+                }
+                storeLevelMap(levelMap,"importMusicMap.beat");
+
+                Intent intent = new Intent("GameCanvasView.intent.action.Launch");
+                getContext().startActivity(intent);
+
+                ((Activity)getContext()).finish();
+                analysisAlertDialog.dismiss();
+            }
+        });
+        analysisAlertDialog = builder.create();
+        analysisAlertDialog.show();
 
     }
+
 
     public void initialiseGameArray(){
         System.out.println("Level Height:" + levelheight);
@@ -140,19 +192,60 @@ public class PlayerVisualiserView extends View {
         }
     }
 
-    public void performSpikeAnalysis(){
+    public void performSpikeAnalysis(int analysisType){
         int spriteHeight = gameClassInstance.getSpriteSizeHeight();
-        //System.out.print(levelheight + " ");
-        for (int i = 0; i < bytes.length; i++){
-            int numberOfSpikes = bytes[i]/spriteHeight;
 
-            if(numberOfSpikes > 0){
-                //System.out.println("num spikes" + numberOfSpikes);
-                for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
-                    levelMap[j][i] = 'S';
-                    //System.out.println(levelMap[j][i]);
+        //case 0
+        //Detect 75% of spikes
+        if(analysisType==0){
+            int maxPeakByte = 0;
+            double percThreshold = 0.75;
+
+            for (int i = 0; i < bytes.length; i++){
+                int numberOfSpikes = bytes[i]/spriteHeight;
+
+                if(numberOfSpikes > (maxPeakByte*percThreshold)){
+                    maxPeakByte = numberOfSpikes;
                 }
             }
+
+            for (int i = 0; i < bytes.length; i++){
+                int numberOfSpikes = bytes[i]/spriteHeight;
+
+                if(numberOfSpikes >= maxPeakByte){
+                    //System.out.println("num spikes" + numberOfSpikes);
+                    for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
+                        levelMap[j][i] = 'S';
+                        //System.out.println(levelMap[j][i]);
+                    }
+                }
+            }
+
+        }
+        //case 1
+        //Detect using genre of song
+        else if(analysisType==1){
+
+        }
+        //case 2
+        //Detect all amplitude
+        else if(analysisType==2) {
+            for (int i = 0; i < bytes.length; i++){
+                int numberOfSpikes = bytes[i]/spriteHeight;
+
+                if(numberOfSpikes > 0){
+                    //System.out.println("num spikes" + numberOfSpikes);
+                    for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
+                        levelMap[j][i] = 'S';
+                        //System.out.println(levelMap[j][i]);
+                    }
+                }
+            }
+        }
+        //No case given
+        else{
+            Log.e(TAG, "performSpikeAnalysis: No case given");
+            //ERROR!
         }
     }
 
@@ -240,10 +333,6 @@ public class PlayerVisualiserView extends View {
                 float right = x + dp(2);
                 float bottom = y + dp(VISUALIZER_HEIGHT);
 
-                //Problem lies here, barHeightArray will not add the height value to the height arrayList (and height of bar is top)
-                //Normal styled arrays with define size will also not add to its array...
-                //barHeightArray.add(top);
-
                 if (x < denseness && x + dp(2) < denseness) {
                     canvas.drawRect(left, top, right, bottom, notPlayedStatePainting);
                 } else {
@@ -254,7 +343,6 @@ public class PlayerVisualiserView extends View {
                 }
 
                 barNum++;
-                //System.out.println("size of array in method of onDraw :" + barHeightArray.size());
             }
 
         }

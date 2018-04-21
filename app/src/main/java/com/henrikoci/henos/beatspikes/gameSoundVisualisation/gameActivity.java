@@ -113,6 +113,7 @@ public class gameActivity extends AppCompatActivity {
 
                     Intent intent = new Intent(this, visualiserView.class); // Sets a new intent variable to launch the PlayerVisulizerView class
                     startActivity(intent); // Launches the activity of the intent described above
+                    finish();
                 }
                 break;
         }
