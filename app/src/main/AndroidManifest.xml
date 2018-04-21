@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.henrikoci.henos.beatspikes">
+
+    <!-- Permissions required -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- Application variables -->
+    <!-- Variables are set up for the application such as the application theme and its respective icons and application name -->
+    <application
+        android:allowBackup="true"
+        android:fullBackupContent="@xml/backup_descriptor"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <!-- Splash Screen activity -->
+        <!-- The splash screen is set to be forced landscape and is the main activity when opened by the launcher (and not by any other means) -->
+        <activity
+            android:name=".SplashScreen"
+            android:screenOrientation="sensorLandscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- Main activity -->
+        <!-- The splash screen is set to be forced landscape and is the main activity when opened by default -->
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="sensorLandscape">
+            <intent-filter>
+                <action android:name="com.topitideas.splashscreen.MainActivity" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <!-- Settings activity -->
+        <!-- The splash screen is set to be forced landscape -->
+        <activity
+            android:name=".SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:screenOrientation="sensorLandscape" />
+        <!-- Character desing activity -->
+        <!-- The splash screen is set to be forced landscape -->
+        <activity
+            android:name=".characterDesign"
+            android:label="@string/characterDesignTitle"
+            android:screenOrientation="sensorLandscape" />
+        <!-- Settings activity -->
+        <!-- The splash screen is set to be forced landscape and there is no action bar to make it look immersive -->
+        <activity
+            android:name=".gameSoundVisualisation.gameActivity"
+            android:hardwareAccelerated="true"
+            android:label="@string/gameActivity"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".gameInternals.GameCanvasView"
+            android:hardwareAccelerated="true"
+            android:label="Game Canvas"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen">
+        <intent-filter>
+            <action android:name="GameCanvasView.intent.action.Launch" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent-filter>
+        </activity>
+        <activity android:name=".gameSoundVisualisation.visualiserView"
+            android:screenOrientation="sensorLandscape"
+            android:hardwareAccelerated="true"></activity>
+    </application>
+
+</manifest>
