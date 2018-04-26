@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import static android.content.ContentValues.TAG;
 
@@ -39,6 +40,7 @@ public class PlayerVisualiserView extends View {
      * bytes array converted from file.
      */
     private byte[] bytes;
+    private ArrayList <Float>spikeHeights;
 
     /**
      * Percentage of audio sample scale
@@ -73,9 +75,8 @@ public class PlayerVisualiserView extends View {
     private Handler delayedHandler = new Handler();
 
     static CharSequence[] analysisType = new CharSequence[]{
-            "75% of amplitude",
-            "using preset genre",
-            "any present amplitude",
+            "Spikes relative to amplitude",
+            "Spikes present on one block",
     };
 
     public PlayerVisualiserView(Context context) {
@@ -101,9 +102,10 @@ public class PlayerVisualiserView extends View {
         notPlayedStatePainting.setAntiAlias(true);
         notPlayedStatePainting.setColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
 
+        System.out.println("SpikeHeight" + spikeHeights);
         //Draw the visual bars using the media file imported
         updateVisualizer(fileToBytes(gameActivity.audioFile));
-
+        System.out.println("SpikeAfter" + spikeHeights);
         final ProgressDialog progressDialog = new ProgressDialog(getContext());
         progressDialog.setCancelable(false);
         progressDialog.setTitle("Sound generation");
@@ -112,7 +114,7 @@ public class PlayerVisualiserView extends View {
         progressDialog.show();
 
         //Initialise the default game array which is blank (F floor and _ sky)
-        initialiseGameArray();
+        //initialiseGameArray();
 
         //Change message to spike generation state
         //progressDialog.setMessage("Analysing audio spectrum");
@@ -121,7 +123,7 @@ public class PlayerVisualiserView extends View {
         delayedHandler.postDelayed(new Runnable() {
             public void run() {
 
-                checkSpikeAnalysisType();
+                //checkSpikeAnalysisType();
 
                 progressDialog.cancel();
             }
@@ -149,9 +151,6 @@ public class PlayerVisualiserView extends View {
                     case 1:
                         performSpikeAnalysis(1);
                         break;
-                    case 2:
-                        performSpikeAnalysis(2);
-                        break;
                 }
                 storeLevelMap(levelMap,"importMusicMap.beat");
 
@@ -170,8 +169,8 @@ public class PlayerVisualiserView extends View {
 
     public void initialiseGameArray(){
         System.out.println("Level Height:" + levelheight);
-        levelWidth = bytes.length;
-        System.out.println("Level Width:" + bytes.length);
+        levelWidth = spikeHeights.size();
+        System.out.println("Level Width:" + spikeHeights.size());
 
         levelMap = new char[levelheight][levelWidth];
         // Initialise levelMap to blank by adding "_" to each element in the Array
@@ -193,54 +192,31 @@ public class PlayerVisualiserView extends View {
     }
 
     public void performSpikeAnalysis(int analysisType){
-        int spriteHeight = gameClassInstance.getSpriteSizeHeight();
-
         //case 0
-        //Detect 75% of spikes
+        //Detect spikes relative to freq
         if(analysisType==0){
-            int maxPeakByte = 0;
-            double percThreshold = 0.75;
 
-            for (int i = 0; i < bytes.length; i++){
-                int numberOfSpikes = bytes[i]/spriteHeight;
-
-                if(numberOfSpikes > (maxPeakByte*percThreshold)){
-                    maxPeakByte = numberOfSpikes;
-                }
-            }
-
-            for (int i = 0; i < bytes.length; i++){
-                int numberOfSpikes = bytes[i]/spriteHeight;
-
-                if(numberOfSpikes >= maxPeakByte){
-                    //System.out.println("num spikes" + numberOfSpikes);
-                    for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
-                        levelMap[j][i] = 'S';
-                        //System.out.println(levelMap[j][i]);
+            for (int x = 0; x < spikeHeights.size(); x++){
+                int modulusHeight = (int) (spikeHeights.get(x)%levelheight);
+                if(modulusHeight > 0){
+                    for (int y = 0; y < modulusHeight;y++){
+                        levelMap[(levelheight-2)+(y-1)][x] = 'S';
                     }
                 }
             }
 
         }
         //case 1
-        //Detect using genre of song
+        //Detect spikes to only one block high
         else if(analysisType==1){
 
-        }
-        //case 2
-        //Detect all amplitude
-        else if(analysisType==2) {
-            for (int i = 0; i < bytes.length; i++){
-                int numberOfSpikes = bytes[i]/spriteHeight;
-
-                if(numberOfSpikes > 0){
-                    //System.out.println("num spikes" + numberOfSpikes);
-                    for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
-                        levelMap[j][i] = 'S';
-                        //System.out.println(levelMap[j][i]);
-                    }
+            for (int x = 0; x < spikeHeights.size(); x++){
+                System.out.println(spikeHeights.get(x)%levelheight);
+                if(spikeHeights.get(x)%levelheight > 0){
+                    levelMap[levelheight-2][x] = 'S';
                 }
             }
+
         }
         //No case given
         else{
@@ -303,6 +279,8 @@ public class PlayerVisualiserView extends View {
         int barNum = 0;
         int lastBarNum;
 
+        spikeHeights = new ArrayList();
+
         for (int a = 0; a < samplesCount; a++) {
             if (a != nextBarNum) {
                 continue;
@@ -333,6 +311,8 @@ public class PlayerVisualiserView extends View {
                 float right = x + dp(2);
                 float bottom = y + dp(VISUALIZER_HEIGHT);
 
+                spikeHeights.add(top);
+
                 if (x < denseness && x + dp(2) < denseness) {
                     canvas.drawRect(left, top, right, bottom, notPlayedStatePainting);
                 } else {
@@ -344,8 +324,13 @@ public class PlayerVisualiserView extends View {
 
                 barNum++;
             }
+            System.out.println(spikeHeights);
 
         }
+        //Initialise the default game array which is blank (F floor and _ sky)
+        initialiseGameArray();
+
+        checkSpikeAnalysisType();
     }
 
     public int dp(float value) {
@@ -381,7 +366,7 @@ public class PlayerVisualiserView extends View {
 
         for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
-                    levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
+                levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
             }
             levelMapCombinedString = levelMapCombinedString + lineSeperator;
         }
