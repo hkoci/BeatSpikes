@@ -15,7 +15,7 @@ public class visualiserView extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(new PlayerVisualiserView(this));
+        setContentView(new PlayerVisualiserView(this)); //set activity view to visualiser view!
     }
 
 }

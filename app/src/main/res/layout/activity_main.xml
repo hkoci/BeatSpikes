@@ -58,13 +58,4 @@
             android:onClick="gotoQuit"/>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/Devbutton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:onClick="gotoDev"
-        android:text="Developer view"
-        tools:layout_editor_absoluteX="454dp"
-        tools:layout_editor_absoluteY="240dp" />
-
 </android.support.constraint.ConstraintLayout>

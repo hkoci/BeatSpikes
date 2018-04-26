@@ -30,6 +30,7 @@ public class SplashScreen extends Activity {
         timerThread.start(); // starts the timed delay of the splash screen
     }
 
+    //automatically generated method from Android Studio!
     @Override
     protected void onPause() {
         // TODO Auto-generated method stub

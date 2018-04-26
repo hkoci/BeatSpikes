@@ -17,6 +17,7 @@ public class GameCanvasView extends Activity{
         //set to full screen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+        //set the activity view to the GameViewPort class (the class with the game!)
         setContentView(new GameViewPort(this));
     }
 

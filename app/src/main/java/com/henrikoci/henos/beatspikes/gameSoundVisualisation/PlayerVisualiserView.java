@@ -67,11 +67,13 @@ public class PlayerVisualiserView extends View {
 
     public char[][] levelMap;// = new char[levelheight][levelWidth];
 
+    //modal for analysis types
     AlertDialog analysisAlertDialog;
 
     //latency time to draw delay handler
     private Handler delayedHandler = new Handler();
 
+    // analysis types modal sentences
     static CharSequence[] analysisType = new CharSequence[]{
             "75% of amplitude",
             "using preset genre",
@@ -104,6 +106,7 @@ public class PlayerVisualiserView extends View {
         //Draw the visual bars using the media file imported
         updateVisualizer(fileToBytes(gameActivity.audioFile));
 
+        //set progress bar to init. array
         final ProgressDialog progressDialog = new ProgressDialog(getContext());
         progressDialog.setCancelable(false);
         progressDialog.setTitle("Sound generation");
@@ -121,11 +124,11 @@ public class PlayerVisualiserView extends View {
         delayedHandler.postDelayed(new Runnable() {
             public void run() {
 
-                checkSpikeAnalysisType();
+                checkSpikeAnalysisType(); //perform spike detection
 
-                progressDialog.cancel();
+                progressDialog.cancel(); //close progress as modal will open
             }
-        }, 200);
+        }, 200); //delay 200ms
     }
 
 
@@ -135,31 +138,31 @@ public class PlayerVisualiserView extends View {
 
         builder.setTitle("Spike frequency detection");
 
-        builder.setCancelable(false);
+        builder.setCancelable(false); //cannot close
 
-        builder.setSingleChoiceItems(analysisType, -1, new DialogInterface.OnClickListener() {
+        builder.setSingleChoiceItems(analysisType, -1, new DialogInterface.OnClickListener() { //modal select item from list defined in analysos type
 
             public void onClick(DialogInterface dialog, int item) {
 
                 switch(item)
                 {
                     case 0:
-                        performSpikeAnalysis(0);
+                        performSpikeAnalysis(0); //75% amplitude
                         break;
                     case 1:
-                        performSpikeAnalysis(1);
+                        performSpikeAnalysis(1); //genre
                         break;
                     case 2:
-                        performSpikeAnalysis(2);
+                        performSpikeAnalysis(2); //any preset
                         break;
                 }
-                storeLevelMap(levelMap,"importMusicMap.beat");
+                storeLevelMap(levelMap,"importMusicMap.beat"); //store levelMap in importMusicMap.beat
 
-                Intent intent = new Intent("GameCanvasView.intent.action.Launch");
-                getContext().startActivity(intent);
+                Intent intent = new Intent("GameCanvasView.intent.action.Launch"); //launch intent to game class
+                getContext().startActivity(intent); //start activity to game class
 
-                ((Activity)getContext()).finish();
-                analysisAlertDialog.dismiss();
+                ((Activity)getContext()).finish(); //close this activity, no need to have it open!
+                analysisAlertDialog.dismiss(); //close dialog
             }
         });
         analysisAlertDialog = builder.create();
@@ -169,8 +172,8 @@ public class PlayerVisualiserView extends View {
 
 
     public void initialiseGameArray(){
-        System.out.println("Level Height:" + levelheight);
-        levelWidth = bytes.length;
+        System.out.println("Level Height:" + levelheight); //height of level
+        levelWidth = bytes.length; //width of level
         System.out.println("Level Width:" + bytes.length);
 
         levelMap = new char[levelheight][levelWidth];
@@ -193,7 +196,7 @@ public class PlayerVisualiserView extends View {
     }
 
     public void performSpikeAnalysis(int analysisType){
-        int spriteHeight = gameClassInstance.getSpriteSizeHeight();
+        int spriteHeight = gameClassInstance.getSpriteSizeHeight(); //get spriteSizeHeight from game class
 
         //case 0
         //Detect 75% of spikes
@@ -201,21 +204,23 @@ public class PlayerVisualiserView extends View {
             int maxPeakByte = 0;
             double percThreshold = 0.75;
 
+            //loop through each bar in array
             for (int i = 0; i < bytes.length; i++){
-                int numberOfSpikes = bytes[i]/spriteHeight;
+                int numberOfSpikes = bytes[i]/spriteHeight; //scale down to height required
 
                 if(numberOfSpikes > (maxPeakByte*percThreshold)){
-                    maxPeakByte = numberOfSpikes;
+                    maxPeakByte = numberOfSpikes; //set maximum peak to the largest amplitude
                 }
             }
 
+            //loop through every bar in array
             for (int i = 0; i < bytes.length; i++){
                 int numberOfSpikes = bytes[i]/spriteHeight;
 
                 if(numberOfSpikes >= maxPeakByte){
                     //System.out.println("num spikes" + numberOfSpikes);
                     for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
-                        levelMap[j][i] = 'S';
+                        levelMap[j][i] = 'S'; //place spike where the current bar is larger than the peakbyte
                         //System.out.println(levelMap[j][i]);
                     }
                 }
@@ -225,7 +230,7 @@ public class PlayerVisualiserView extends View {
         //case 1
         //Detect using genre of song
         else if(analysisType==1){
-
+//TODO
         }
         //case 2
         //Detect all amplitude
@@ -236,7 +241,7 @@ public class PlayerVisualiserView extends View {
                 if(numberOfSpikes > 0){
                     //System.out.println("num spikes" + numberOfSpikes);
                     for (int j = levelheight-2; j >= (levelheight - numberOfSpikes); j--){
-                        levelMap[j][i] = 'S';
+                        levelMap[j][i] = 'S'; //place spike where it is great than numberOfSpikes without condition
                         //System.out.println(levelMap[j][i]);
                     }
                 }
@@ -363,7 +368,7 @@ public class PlayerVisualiserView extends View {
             buf.read(bytes, 0, bytes.length);
             buf.close();
         } catch (FileNotFoundException e) {
-            Log.e(TAG, "fileToBytes: ERROR 0x00000002", e);
+            Log.e(TAG, "fileToBytes: ERROR 0x00000002", e); //added logs for errors when files are not found to convert to bytes
             e.printStackTrace();
         } catch (IOException e) {
             Log.e(TAG, "fileToBytes: ERROR 0x0000000D", e);
@@ -372,30 +377,34 @@ public class PlayerVisualiserView extends View {
         return bytes;
     }
 
+    //store levelmap to data partition
     private void storeLevelMap(char[][] array,String filename){
-        String levelMapCombinedString = "";
+        String levelMapCombinedString = ""; //string of level characters
 
-        String lineSeperator = System.getProperty( "line.separator" );
+        String lineSeperator = System.getProperty( "line.separator" ); //whitespace character
         //initialise size parameters at top of file
-        levelMapCombinedString = "" + levelheight + " " + levelWidth + lineSeperator;
+        levelMapCombinedString = "" + levelheight + " " + levelWidth + lineSeperator; //first line contains height and width parameters to be set to game class
 
+        //add each individual element to the combined string
         for (int heightLoop = 0; heightLoop <levelheight; heightLoop++) {
             for ( int widthLoop = 0; widthLoop <levelWidth; widthLoop++) {
-                    levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
+                levelMapCombinedString = levelMapCombinedString + levelMap[heightLoop][widthLoop];
             }
             levelMapCombinedString = levelMapCombinedString + lineSeperator;
         }
 
+        //output file
         FileOutputStream outputStream;
 
         try {
-            outputStream = gameClassInstance.getContext().openFileOutput(filename, Context.MODE_PRIVATE);
-            outputStream.write(levelMapCombinedString.getBytes());
-            outputStream.close();
+            outputStream = gameClassInstance.getContext().openFileOutput(filename, Context.MODE_PRIVATE); //open file for writing
+            outputStream.write(levelMapCombinedString.getBytes()); //write file to data partition using filename
+            outputStream.close(); //close
         } catch (Exception e) {
             Log.e(TAG, "storeLevelMap: ERROR 0x0000001D", e);
-            e.printStackTrace();
+            e.printStackTrace(); //show trace incase of error!
         }
     }
 
 }
+
